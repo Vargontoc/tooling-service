@@ -1,5 +1,6 @@
 import { isIP } from "node:net";
 import { URL } from "node:url";
+import { env } from "../../config/env.js";
 
 function isPrivateIPv4(ip: string): boolean {
 
@@ -38,13 +39,15 @@ export function validateTargetUrl(raw: string): URL {
 
   const hostname = url.hostname.toLowerCase();
 
-  if (hostname === "localhost" || hostname === "0.0.0.0") {
-    throw new Error("Target host is not allowed.");
-  }
-
-  if (isIP(hostname) === 4) {
-    if (isPrivateIPv4(hostname)) {
-      throw new Error("Target IP is not allowed.");
+  if(!env.allowPrivateTargets) {
+    if (hostname === "localhost" || hostname === "0.0.0.0") {
+      throw new Error("Target host is not allowed.");
+    }
+  
+    if (isIP(hostname) === 4) {
+      if (isPrivateIPv4(hostname)) {
+        throw new Error("Target IP is not allowed.");
+      }
     }
   }
 

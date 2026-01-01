@@ -14,7 +14,7 @@ function instanceFromRequest(req: FastifyRequest): string {
     return path
 }
 
-function sendProblem(reply: FastifyReply, problem:ProblemDetails) {
+export function sendProblem(reply: FastifyReply, problem:ProblemDetails) {
     reply.header("content-type", "application/problem+json").code(problem.status).send(problem)
 }
 

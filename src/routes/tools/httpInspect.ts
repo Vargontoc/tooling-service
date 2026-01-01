@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod"
 import { httpInspect } from "../../domain/http/httpInspect.js";
 import { zodToProblem } from "../../domain/validation/zod.js";
+import { problem, sendProblem } from "../../plugins/errors.js";
 
 const BodySchema = z.object({
   url: z.string().min(1),
@@ -31,7 +32,7 @@ export async function registerHttpInspectRoutes(app: FastifyInstance): Promise<v
         const result = await httpInspect(parsed.data);
         return reply.send(result);
       } catch (err: any) {
-        return reply.code(400).send({ error: err?.message ?? "Invalid request" });
+        return sendProblem(reply, problem(req, 400, err?.message ?? "Invalid request", "https://problems.vargontoc.es/request-error"));
       }
     },
   );

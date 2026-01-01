@@ -1,6 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { decodeJwt } from "../../domain/jwt/jwtDecode.js";
+import { zodToProblem } from "../../domain/validation/zod.js";
+import { problem, sendProblem } from "../../plugins/errors.js";
 
 const BodySchema = z.object({
     token: z.string().min(1)
@@ -17,14 +19,14 @@ export async function registerJwtDecodeRoutes(app: FastifyInstance) : Promise<vo
     async (req, reply) => {
         const parsed = BodySchema.safeParse(req.body)
         if(!parsed.success) {
-            return reply.code(400).send({ error: "Bad Request", details: parsed.error.flatten()})
+            return sendProblem(reply, zodToProblem(req, parsed.error))
         }
 
         try {
             const result = decodeJwt(parsed.data.token)
             return reply.send(result)
         }catch(err: any) {
-            return reply.code(400).send({ error: err?.message ?? "Invalid token"})
+            return sendProblem(reply, problem(req, 400, err?.message ?? "Invalid token", "https://problems.vargontoc.es/request-error"))
         }
     }
     )
