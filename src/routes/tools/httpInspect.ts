@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod"
 import { httpInspect } from "../../domain/http/httpInspect.js";
+import { zodToProblem } from "../../domain/validation/zod.js";
 
 const BodySchema = z.object({
   url: z.string().min(1),
@@ -21,7 +22,9 @@ export async function registerHttpInspectRoutes(app: FastifyInstance): Promise<v
     async (req, reply) => {
       const parsed = BodySchema.safeParse(req.body);
       if (!parsed.success) {
-        return reply.code(400).send({ error: "Bad Request", details: parsed.error.flatten() });
+        return reply.header("Content-Type", "application/problem+json")
+        .code(400)
+        .send(zodToProblem(req, parsed.error));
       }
 
       try {

@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { env } from "../config/env.js";
+import { problem } from "./errors.js";
 
 const PUBLIC_PREFIXES = ["/docs", "/docs/", "/openapi.json", "/health"]
 
@@ -14,11 +15,15 @@ export async function registerApiKeyAuth(app: FastifyInstance) : Promise<void> {
 
         const apiKey = req.headers["x-api-key"];
         if(typeof apiKey !== "string" || apiKey.length === 0) {
-            return reply.code(401).send({error: "Unauthorized" })
+            return reply.header("Content-Type", "application/problem+json")
+                        .code(401)
+                        .send(problem(req, 401, "Missing or invalid API key.", "https://problems.vargontoc.es/unauthorized"));
         }
 
         if(apiKey !== env.apiKey) {
-            return reply.code(401).send({error: "Unauthorized" })
+            return reply.header("Content-Type", "application/problem+json")
+                        .code(401)
+                        .send(problem(req, 401, "Missing or invalid API key.", "https://problems.vargontoc.es/unauthorized"));
         }
     })
 }
