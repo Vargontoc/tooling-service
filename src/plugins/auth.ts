@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { env } from "../config/env.js";
-import { error } from "node:console";
 
 const PUBLIC_PREFIXES = ["/docs", "/docs/", "/openapi.json", "/health"]
 
@@ -13,7 +12,7 @@ export async function registerApiKeyAuth(app: FastifyInstance) : Promise<void> {
     app.addHook("onRequest", async (req: FastifyRequest, reply) => {
         if(isPublicPath(req.url)) return;
 
-        const apiKey = req.headers["X-API-Key"];
+        const apiKey = req.headers["x-api-key"];
         if(typeof apiKey !== "string" || apiKey.length === 0) {
             return reply.code(401).send({error: "Unauthorized" })
         }
